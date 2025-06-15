@@ -37,22 +37,24 @@ def extract_urls(output_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extrai URLs de um APK.")
-    parser.add_argument("-a", "--apk", help="Caminho do APK (obrigatório se não usar --search-only)")
+    parser.add_argument("-a", "--apk", help="Caminho do APK (obrigatório se não usar -s)")
     parser.add_argument("-o", "--output", default="output", help="Diretório de saída da decompilação")
-    parser.add_argument("-s", "--search-only", action="store_true", help="Pular decompilação e usar pasta já decompilada")
+    parser.add_argument("-s", "--search-only", metavar="DIR", help="Pular decompilação e usar pasta já decompilada")
 
     args = parser.parse_args()
 
-    if not args.search_only:
+    if args.search_only:
+        if not os.path.isdir(args.search_only):
+            print(f"{RED}[-] Pasta '{args.search_only}' não encontrada.{RESET}")
+            exit(1)
+        output_dir = args.search_only
+    else:
         if not args.apk:
             parser.error("Você deve fornecer o caminho do APK com -a, ou usar -s para apenas buscar.")
-        decompile_apk(args.apk, args.output)
-    else:
-        if not os.path.isdir(args.output):
-            print(f"{RED}[-] Pasta '{args.output}' não encontrada. Use -a para decompilar o APK.{RESET}")
-            exit(1)
+        output_dir = args.output
+        decompile_apk(args.apk, output_dir)
 
     print(f"\n{GREEN}[+] URLs encontradas:{RESET}")
-    urls = extract_urls(args.output)
+    urls = extract_urls(output_dir)
     for u in urls:
         print(f"{CYAN}{u}{RESET}")
